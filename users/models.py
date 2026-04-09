@@ -20,7 +20,7 @@ class User(AbstractUser):
     )
 
     # Contact Information
-    contact_number = models.CharField(max_length=15, null=True, blank=True)
+    contact_number = models.TextField(null=True, blank=True)
     address = models.TextField(null=True, blank=True)
     email = models.EmailField(unique=True, null=False, blank=False)
 
