@@ -179,12 +179,13 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 def verify_slip_view(request, appointment_id):
     appointment = get_object_or_404(Appointment, id=appointment_id)
     
-    timeout_dt = appointment.date_time + timedelta(hours=1)
-
+    local_dt = timezone.localtime(appointment.date_time)
+    timeout_dt = local_dt + timedelta(hours=1)
+    
     context = {
         'appointment': appointment,
         'full_name': f"{appointment.patient.first_name} {appointment.patient.last_name}",
-        'date': appointment.date_time.strftime('%B %d, %Y'),
-        'timeout_time': timeout_dt.strftime('%I:%M %p'), 
+        'date': local_dt.strftime('%B %d, %Y'),
+        'timeout_time': timeout_dt.strftime('%I:%M %p'),
     }
     return render(request, 'appointments/verify_slip.html', context)
