@@ -16,7 +16,8 @@ class CustomTokenSerializer(TokenObtainPairSerializer):
 
     # Include user details in the token response
     def validate(self, attrs):
-        data =super().validate(attrs)
+        data = super().validate(attrs)
+        data['id'] = self.user.id
         data['role'] = self.user.role  
         data['first_name'] = self.user.first_name
         data['last_name'] = self.user.last_name
@@ -82,10 +83,10 @@ class UserSerializer(serializers.ModelSerializer):
                     request.user.is_authenticated and 
                     getattr(request.user, 'role', None) == 'admin')
 
-        if is_admin and requested_role in ['doctor', 'admin']:
+        if is_admin and requested_role in ['faculty', 'admin', 'dean']:
             role = requested_role
         else:
-            role = 'patient'
+            role = 'student'
 
         # ENCRYPT FIELDS
         sensitive_fields = [
@@ -133,13 +134,13 @@ class UserSerializer(serializers.ModelSerializer):
         return ret
 
 
-class DoctorListSerializer(serializers.ModelSerializer):
-    """ List serializer for doctors with full name and role """
+class FacultyListSerializer(serializers.ModelSerializer):
+    """ List serializer for faculty with full name and role """
     full_name = serializers.SerializerMethodField()
 
     class Meta:
-        model = User
-        fields = ['id', 'full_name', 'role', 'specialization']
+         model = User
+         fields = ['id', 'full_name', 'role', 'specialization']
 
     def get_full_name(self, obj):
         spec = (obj.specialization or "").lower()
@@ -149,8 +150,10 @@ class DoctorListSerializer(serializers.ModelSerializer):
             prefix = "Dentist"
         elif "nurse" in spec or role == "nurse":
             prefix = "Nurse"
-        elif role == "doctor":
-            prefix = "Dr."
+        elif role == "dean":
+            prefix = "Dean"
+        elif role == "faculty":
+            prefix = ""
         else:
             prefix = ""
 

@@ -3,14 +3,14 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from users.views import CustomTokenView, register_view, logout_view, DoctorViewSet, admin_add_personnel, UserViewSet, google_auth_view
+from users.views import CustomTokenView, register_view, logout_view, FacultyViewSet, admin_add_personnel, UserViewSet, google_auth_view
 from appointments.views import AppointmentViewSet, verify_slip_view
 
 
 # API router for automatic ViewSet URL routing
 router = DefaultRouter()
 router.register(r'appointments', AppointmentViewSet, basename='appointment')
-router.register(r'doctors', DoctorViewSet, basename='doctor') 
+router.register(r'faculty', FacultyViewSet, basename='faculty') 
 router.register(r'users', UserViewSet, basename='user')
 
 urlpatterns = [
@@ -26,7 +26,7 @@ urlpatterns = [
     path('api/logout/', logout_view, name='logout'),
     path('api/admin/add-personnel/', admin_add_personnel, name='admin_add_personnel'),
 
-     # API routes for appointments and doctors
+     # API routes for appointments and faculty
     path('api/', include(router.urls)),
 
     path('verify-slip/<int:appointment_id>/', verify_slip_view, name='verify_slip'),

@@ -29,16 +29,17 @@ class User(AbstractUser):
     year = models.CharField(max_length=50, null=True, blank=True)
     section = models.CharField(max_length=50, null=True, blank=True)
 
-    # For Doctors
+    # For Faculty
     specialization = models.CharField(max_length=100, null=True, blank=True)
 
     ROLE_CHOICES = [
         ("admin", "Admin"),
-        ("doctor", "Doctor"),
-        ("patient", "Patient"),
+        ("faculty", "Faculty"),
+        ("dean", "Dean"),
+        ("student", "Student"),
     ]
 
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="patient")
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="student")
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} - {self.role}"

@@ -4,7 +4,7 @@ from users.models import User
 
 
 class Appointment(models.Model):
-    """ Stores appointment details between a patient and a doctor """
+    """ Stores appointment details between a student and a faculty member """
     STATUS_CHOICES = [
         ('Pending', 'Pending'),
         ('Approved', 'Approved'),
@@ -14,8 +14,9 @@ class Appointment(models.Model):
         ('Expired', 'Expired'),
     ]
 
-    patient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='appointments')
-    doctor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='doctor_appointments')
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='student_appointments', null=True, blank=True)
+    faculty = models.ForeignKey(User, on_delete=models.CASCADE, related_name='faculty_appointments')
+    participants = models.ManyToManyField(User, related_name='participating_appointments', blank=True)
 
     service = models.CharField(max_length=100, default='General Consultation')
 

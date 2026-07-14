@@ -10,7 +10,7 @@ from google.auth.transport import requests as google_requests
 from django.conf import settings
 
 from .models import User
-from .serializers import UserSerializer, CustomTokenSerializer, DoctorListSerializer
+from .serializers import UserSerializer, CustomTokenSerializer, FacultyListSerializer
 
 
 class CustomTokenView(TokenObtainPairView):
@@ -172,8 +172,8 @@ class UserViewSet(viewsets.ModelViewSet):
         instance.delete()
 
 
-class DoctorViewSet(viewsets.ReadOnlyModelViewSet):
-    """ Provides a read-only endpoint to list all doctors """
+class FacultyViewSet(viewsets.ReadOnlyModelViewSet):
+    """ Provides a read-only endpoint to list all faculty """
     permission_classes = [IsAuthenticated]
-    queryset = User.objects.filter(role="doctor")
-    serializer_class = DoctorListSerializer 
+    queryset = User.objects.filter(role__in=["faculty", "dean"])
+    serializer_class = FacultyListSerializer
