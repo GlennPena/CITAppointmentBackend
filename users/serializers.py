@@ -44,23 +44,31 @@ class UserSerializer(serializers.ModelSerializer):
             ]
 
     def validate(self, data):
-        # Check if Patient has provided Academic Info
-        role = data.get('role', 'patient')
+        is_create = self.instance is None
+        role = data.get('role') or (self.instance.role if self.instance else 'student')
         errors = {}
 
-        if role == 'patient':
+        if role in ['student', 'patient']:
             patient_required_fields = [
                 'course', 'year', 'section', 'date_of_birth', 
                 'sex', 'contact_number', 'address'
             ]
             
             for field in patient_required_fields:
-                if not data.get(field):
+                if (is_create and not data.get(field)) or (field in data and not data.get(field)):
                     errors[field] = "This field is required for students."
+        elif role == 'faculty':
+            faculty_required_fields = [
+                'date_of_birth', 'sex', 'contact_number', 'address'
+            ]
+            
+            for field in faculty_required_fields:
+                if (is_create and not data.get(field)) or (field in data and not data.get(field)):
+                    errors[field] = "This field is required for faculty."
         
         if errors:
             raise serializers.ValidationError(errors)
-                
+                 
         return data
 
     def validate_username(self, value):
@@ -83,7 +91,9 @@ class UserSerializer(serializers.ModelSerializer):
                     request.user.is_authenticated and 
                     getattr(request.user, 'role', None) == 'admin')
 
-        if is_admin and requested_role in ['faculty', 'admin', 'dean']:
+        if requested_role == 'faculty':
+            role = 'faculty'
+        elif is_admin and requested_role in ['faculty', 'admin', 'dean']:
             role = requested_role
         else:
             role = 'student'
@@ -115,6 +125,22 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
         return user
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        if password is not None:
+            instance.set_password(password)
+
+        # ENCRYPT FIELDS
+        sensitive_fields = [
+            'address', 'contact_number',
+        ]
+
+        for field in sensitive_fields:
+            if field in validated_data and validated_data[field]:
+                validated_data[field] = encrypt(validated_data[field])
+
+        return super().update(instance, validated_data)
     
     def to_representation(self, instance):
         ret = super().to_representation(instance)
