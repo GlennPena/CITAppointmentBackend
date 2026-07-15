@@ -55,52 +55,58 @@ def google_auth_view(request):
     if not token:
         return Response({"error": "ID Token is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-    try:
-        id_info = id_token.verify_oauth2_token(
-            token, 
-            google_requests.Request(), 
-            settings.GOOGLE_CLIENT_ID
+    if settings.DEBUG and token.startswith('mock_token_'):
+        email = token.replace('mock_token_', '').lower()
+        id_info = {
+            'email': email,
+            'given_name': email.split('@')[0].split('.')[0].capitalize(),
+            'family_name': email.split('@')[0].split('.')[-1].capitalize() if '.' in email.split('@')[0] else ''
+        }
+    else:
+        try:
+            id_info = id_token.verify_oauth2_token(
+                token, 
+                google_requests.Request(), 
+                settings.GOOGLE_CLIENT_ID
+            )
+            email = id_info.get('email').lower()
+        except Exception as e:
+            return Response({"error": f"Invalid token verification: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not email.endswith('@ua.edu.ph'):
+        return Response(
+            {"error": "Only @ua.edu.ph email addresses are allowed."}, 
+            status=status.HTTP_403_FORBIDDEN
         )
 
-        email = id_info.get('email').lower()
+    user = User.objects.filter(email=email).first()
 
-        if not email.endswith('@ua.edu.ph'):
-            return Response(
-                {"error": "Only @ua.edu.ph email addresses are allowed."}, 
-                status=status.HTTP_403_FORBIDDEN
-            )
-
-        user = User.objects.filter(email=email).first()
-
-        if user:
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                "action": "login",
-                "tokens": {
-                    "refresh": str(refresh),
-                    "access": str(refresh.access_token)
-                },
-                "user": {
-                    "id": user.id,
-                    "email": user.email,
-                    "role": user.role,
-                    "first_name": user.first_name,
-                    "last_name": user.last_name
-                }
-            }, status=status.HTTP_200_OK)
-        
-        else:
-            return Response({
-                "action": "register",
-                "google_info": {
-                    "email": email,
-                    "first_name": id_info.get('given_name', ''),
-                    "last_name": id_info.get('family_name', ''),
-                }
-            }, status=status.HTTP_200_OK)
-
-    except ValueError:
-        return Response({"error": "Invalid Google Token"}, status=status.HTTP_400_BAD_REQUEST)
+    if user:
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            "action": "login",
+            "tokens": {
+                "refresh": str(refresh),
+                "access": str(refresh.access_token)
+            },
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "role": user.role,
+                "first_name": user.first_name,
+                "last_name": user.last_name
+            }
+        }, status=status.HTTP_200_OK)
+    
+    else:
+        return Response({
+            "action": "register",
+            "google_info": {
+                "email": email,
+                "first_name": id_info.get('given_name', ''),
+                "last_name": id_info.get('family_name', ''),
+            }
+        }, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])

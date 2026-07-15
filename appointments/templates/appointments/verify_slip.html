@@ -1,58 +1,69 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Consultation Report - University of the Assumption</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+        rel="stylesheet">
     <style>
-        body { 
+        body {
             font-family: 'Inter', sans-serif;
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
             min-height: 100vh;
-            background: #F1F5F9; 
+            background: #F1F5F9;
             -webkit-font-smoothing: antialiased;
             margin: 0px;
         }
-        .card { 
-            background: white; 
-            padding: 40px; 
-            border-radius: 15px; 
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); 
-            width: 100%; 
-            max-width: 500px; 
+
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
             position: relative;
             margin: 20px;
         }
+
         .header-container {
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 20px;
         }
+
         .logo {
             width: 55px;
             height: 55px;
             margin-right: 15px;
             object-fit: contain;
         }
+
         .uni-info {
             text-align: left;
         }
-        .uni-name { 
-            color: #000; 
-            margin: 0; 
-            font-size: 1.3rem; 
+
+        .uni-name {
+            color: #000;
+            margin: 0;
+            font-size: 1.3rem;
             font-weight: 800;
         }
-        .location { 
-            color: #64748B; 
-            font-size: 0.85rem; 
+
+        .location {
+            color: #64748B;
+            font-size: 0.85rem;
             margin: 2px 0 0 0;
         }
+
         .doc-title {
             text-align: center;
             text-decoration: underline;
@@ -63,6 +74,7 @@
             text-transform: uppercase;
             color: #002366;
         }
+
         .verified-badge {
             display: flex;
             align-items: center;
@@ -74,14 +86,17 @@
             padding: 10px 16px;
             margin-bottom: 25px;
         }
+
         .verified-badge .icon {
             font-size: 1.3rem;
         }
+
         .verified-badge .text {
             font-weight: 700;
             color: #15803D;
             font-size: 0.9rem;
         }
+
         .section-title {
             font-weight: 800;
             font-size: 0.8rem;
@@ -92,23 +107,27 @@
             margin: 20px 0 14px 0;
             text-transform: uppercase;
         }
+
         .row {
             display: flex;
             align-items: baseline;
             margin-bottom: 12px;
         }
-        .label { 
-            font-weight: 700; 
+
+        .label {
+            font-weight: 700;
             color: #000;
             font-size: 0.9rem;
             white-space: nowrap;
             min-width: 150px;
         }
-        .value { 
+
+        .value {
             font-weight: 400;
             color: #1E293B;
             font-size: 0.9rem;
         }
+
         .notes-box {
             background: #F8FAFC;
             border: 1px solid #E2E8F0;
@@ -120,21 +139,25 @@
             margin-bottom: 6px;
             word-wrap: break-word;
         }
+
         .signature-container {
             margin-top: 35px;
             display: flex;
             justify-content: flex-end;
         }
+
         .signature-block {
             text-align: center;
             width: 200px;
         }
+
         .doc-name {
             font-weight: 800;
             font-size: 0.95rem;
             border-bottom: 1px solid #000;
             padding-bottom: 2px;
         }
+
         .doc-label {
             font-size: 0.8rem;
             margin-top: 5px;
@@ -145,31 +168,38 @@
             .card {
                 padding: 20px;
             }
+
             .logo {
                 width: 45px;
                 height: 45px;
                 margin-right: 10px;
             }
+
             .uni-name {
                 font-size: 1rem;
             }
+
             .doc-title {
                 font-size: 0.9rem;
             }
+
             .label {
                 font-size: 0.82rem;
                 min-width: 120px;
             }
+
             .value {
                 font-size: 0.85rem;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="card">
         <div class="header-container">
-            <img src="https://lh6.googleusercontent.com/proxy/mY9ekBpTZslnxanbR0-u8dovBrXlRgPrECuOAS4RIs_DAEy3ZeuDg9TwhUSpTQPEcQgpN3Wb3A-5JQmhvUohq12J_WX_shgJsQWPXPED6vVSiQ" alt="UA Logo" class="logo">
+            <img src="{% static 'appointments/ua-logo.png' %}"
+                alt="UA Logo" class="logo">
             <div class="uni-info">
                 <h2 class="uni-name">University of the Assumption</h2>
                 <p class="location">City of San Fernando, Pampanga</p>
@@ -180,7 +210,7 @@
 
         <!-- VERIFIED BADGE -->
         <div class="verified-badge">
-            <span class="icon">✅</span>
+            <span class="icon"></span>
             <span class="text">Verified — This consultation report is authentic.</span>
         </div>
 
@@ -193,7 +223,8 @@
         {% if appointment.student %}
         <div class="row">
             <span class="label">Course & Section:</span>
-            <span class="value">{{ appointment.student.course }} {{ appointment.student.year }}-{{ appointment.student.section }}</span>
+            <span class="value">{{ appointment.student.course }} {{ appointment.student.year }}-{{
+                appointment.student.section }}</span>
         </div>
         {% endif %}
         <div class="row">
@@ -228,4 +259,5 @@
         </div>
     </div>
 </body>
+
 </html>
