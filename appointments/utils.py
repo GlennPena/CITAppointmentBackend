@@ -7,6 +7,12 @@ load_dotenv()
 
 # Initialize encryption key and Fernet instance
 KEY = os.getenv("FERNET_KEY")
+if not KEY:
+    # Safe fallback to prevent startup/build crashes
+    KEY = Fernet.generate_key()
+else:
+    KEY = KEY.encode()
+
 fernet = Fernet(KEY)
 
 def encrypt(text):
