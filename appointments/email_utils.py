@@ -1,6 +1,26 @@
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
+import threading
+
+def _send_mail_thread(subject, message, recipient_list, name="email"):
+    try:
+        print(f"Async: Attempting to send '{name}' to {recipient_list}...")
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email='UACIT Appointment System <uacitappointment@gmail.com>',
+            recipient_list=recipient_list,
+            fail_silently=False,
+        )
+        print(f"Async: Successfully sent '{name}' to {recipient_list}")
+    except Exception as e:
+        print(f"Async: FAILED to send '{name}' to {recipient_list}: {e}")
+
+def send_mail_async(subject, message, recipient_list, name="email"):
+    thread = threading.Thread(target=_send_mail_thread, args=(subject, message, recipient_list, name))
+    thread.daemon = True
+    thread.start()
 
 def send_appointment_email(appointment, action):
     """
@@ -117,18 +137,7 @@ def send_appointment_email(appointment, action):
     recipient_emails = [email for email in recipient_emails if email]
 
     if recipient_emails:
-        try:
-            print(f"Attempting to send '{action}' email to {recipient_emails}...")
-            send_mail(
-                subject=subject,
-                message=message,
-                from_email='UACIT Appointment System <uacitappointment@gmail.com>',
-                recipient_list=recipient_emails,
-                fail_silently=False,
-            )
-            print(f"Successfully sent '{action}' email to {recipient_emails}")
-        except Exception as e:
-            print(f"FAILED to send '{action}' email to {recipient_emails}: {e}")
+        send_mail_async(subject, message, recipient_emails, action)
     else:
         print(f"No recipient email found for action {action}")
 
@@ -153,15 +162,4 @@ def send_meeting_invite_email(appointment, participant_emails):
         f"Best regards,\nCIT Appointment System"
     )
 
-    try:
-        print(f"Attempting to send meeting invitation email to {participant_emails}...")
-        send_mail(
-            subject=subject,
-            message=message,
-            from_email='UACIT Appointment System <uacitappointment@gmail.com>',
-            recipient_list=participant_emails,
-            fail_silently=False,
-        )
-        print(f"Successfully sent meeting invitation email to {participant_emails}")
-    except Exception as e:
-        print(f"FAILED to send meeting invitation email to {participant_emails}: {e}")
+    send_mail_async(subject, message, participant_emails, "meeting_invite")
