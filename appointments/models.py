@@ -43,3 +43,15 @@ class Appointment(models.Model):
                 pass
 
         super().save(*args, **kwargs)
+
+
+class MeetingAttendance(models.Model):
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name='attendance_records')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    attended = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('appointment', 'user')
+
+    def __str__(self):
+        return f"{self.user.username} - {'Attended' if self.attended else 'Absent'}"

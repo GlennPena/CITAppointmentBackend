@@ -68,3 +68,13 @@ class User(AbstractUser):
             self.email = self.email.strip().lower()
 
         super().save(*args, **kwargs)
+
+
+class PasswordResetOTP(models.Model):
+    email = models.EmailField(null=False, blank=False)
+    otp = models.CharField(max_length=6, null=False, blank=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.email} - {self.otp} (Used: {self.is_used})"

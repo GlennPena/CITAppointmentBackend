@@ -179,6 +179,17 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         appointment.outcome = outcome
         appointment.consultation_notes = notes
         appointment.save()
+
+        # Handle attendance if provided
+        attendance_data = request.data.get('attendance', {})
+        if attendance_data:
+            from .models import MeetingAttendance
+            for user_id, attended in attendance_data.items():
+                MeetingAttendance.objects.update_or_create(
+                    appointment=appointment,
+                    user_id=int(user_id),
+                    defaults={'attended': bool(attended)}
+                )
         
         return Response({'status': 'appointment completed'})
     

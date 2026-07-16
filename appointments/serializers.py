@@ -17,7 +17,7 @@ class ParticipantSerializer(serializers.ModelSerializer):
 
 
 class AppointmentSerializer(serializers.ModelSerializer):
-    """ Serializes appointment data and controls visibility, validation, and encryption """
+    """ Serializes appointment data and controls visibility, validation, and field access """
 
     student_name = serializers.ReadOnlyField(source='student.get_full_name')
     student_email = serializers.ReadOnlyField(source='student.email')
@@ -61,12 +61,9 @@ class AppointmentSerializer(serializers.ModelSerializer):
                 "condition": "Hidden",
             }
 
-        # Decrypt condition
-        try:
-            if instance.condition:
-                ret['condition'] = decrypt(instance.condition)
-        except:
-            ret['condition'] = "Data Error"
+        # Return condition as plain text (no decryption)
+        if instance.condition:
+            ret['condition'] = instance.condition
 
         if instance.student:
             try:
@@ -81,6 +78,19 @@ class AppointmentSerializer(serializers.ModelSerializer):
         else:
             ret['student_phone'] = ""
             ret['student_address'] = ""
+            
+            # Fetch attendance details
+            attendance_records = instance.attendance_records.all()
+            ret['attendance'] = {str(rec.user_id): rec.attended for rec in attendance_records}
+            ret['participants_attendance'] = [
+                {
+                    "id": p.id,
+                    "full_name": f"{p.first_name} {p.last_name}",
+                    "role": p.role,
+                    "attended": next((rec.attended for rec in attendance_records if rec.user_id == p.id), False)
+                }
+                for p in instance.participants.all()
+            ]
 
         return ret
 
@@ -117,12 +127,9 @@ class AppointmentSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        # Encrypt condition before saving new appointment
-        validated_data['condition'] = encrypt(validated_data.get('condition', ''))
+        # Save condition as plain text
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        # Encrypt condition before updating appointment
-        if 'condition' in validated_data:
-            validated_data['condition'] = encrypt(validated_data['condition'])
+        # Save condition as plain text
         return super().update(instance, validated_data)
