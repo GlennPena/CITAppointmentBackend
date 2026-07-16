@@ -8,7 +8,7 @@ from users.views import (
     admin_add_personnel, UserViewSet, google_auth_view, check_availability_view,
     forgot_password_request_otp, forgot_password_verify_otp, forgot_password_reset_password
 )
-from appointments.views import AppointmentViewSet, verify_slip_view
+from appointments.views import AppointmentViewSet, verify_slip_view, verify_meeting_report_view
 
 
 # API router for automatic ViewSet URL routing
@@ -40,4 +40,5 @@ urlpatterns = [
     path('api/', include(router.urls)),
 
     path('verify-slip/<int:appointment_id>/', verify_slip_view, name='verify_slip'),
+    path('verify-meeting-report/<int:appointment_id>/', verify_meeting_report_view, name='verify_meeting_report'),
 ]

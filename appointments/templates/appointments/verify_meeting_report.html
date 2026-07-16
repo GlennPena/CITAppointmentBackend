@@ -1,0 +1,314 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Meeting Report - University of the Assumption</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            background: #F1F5F9;
+            -webkit-font-smoothing: antialiased;
+            margin: 0;
+            padding: 30px 16px;
+            box-sizing: border-box;
+        }
+
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 580px;
+            position: relative;
+        }
+
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            margin-right: 14px;
+            object-fit: contain;
+        }
+
+        .uni-name {
+            color: #000;
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 800;
+        }
+
+        .location {
+            color: #64748B;
+            font-size: 0.82rem;
+            margin: 2px 0 0 0;
+        }
+
+        .doc-title {
+            text-align: center;
+            text-decoration: underline;
+            font-weight: 900;
+            font-size: 1.05rem;
+            margin: 16px 0 24px 0;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #002366;
+        }
+
+        .verified-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #F0FDF4;
+            border: 1px solid #BBF7D0;
+            border-radius: 10px;
+            padding: 10px 16px;
+            margin-bottom: 24px;
+        }
+
+        .verified-badge .text {
+            font-weight: 700;
+            color: #15803D;
+            font-size: 0.88rem;
+        }
+
+        .section-title {
+            font-weight: 800;
+            font-size: 0.78rem;
+            color: #002366;
+            letter-spacing: 0.8px;
+            border-bottom: 2px solid #002366;
+            padding-bottom: 5px;
+            margin: 22px 0 14px 0;
+            text-transform: uppercase;
+        }
+
+        .row {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 10px;
+        }
+
+        .label {
+            font-weight: 700;
+            color: #000;
+            font-size: 0.88rem;
+            white-space: nowrap;
+            min-width: 140px;
+        }
+
+        .value {
+            font-weight: 400;
+            color: #1E293B;
+            font-size: 0.88rem;
+        }
+
+        .notes-box {
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 0.88rem;
+            line-height: 1.7;
+            color: #334155;
+            word-wrap: break-word;
+        }
+
+        /* Attendance Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 4px;
+            font-size: 0.85rem;
+        }
+
+        thead tr {
+            border-bottom: 2px solid #CBD5E1;
+        }
+
+        th {
+            text-align: left;
+            font-weight: 700;
+            color: #002366;
+            padding: 6px 8px 8px 0;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        td {
+            padding: 8px 8px 8px 0;
+            border-bottom: 1px solid #F1F5F9;
+            color: #334155;
+            vertical-align: middle;
+        }
+
+        .td-name {
+            font-weight: 700;
+            color: #0F172A;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.78rem;
+        }
+
+        .badge-attended {
+            background: #10B981;
+            color: #fff;
+        }
+
+        .badge-absent {
+            background: #EF4444;
+            color: #fff;
+        }
+
+        .no-participants {
+            text-align: center;
+            color: #94A3B8;
+            padding: 12px 0;
+            font-size: 0.85rem;
+        }
+
+        /* Signature */
+        .signature-container {
+            margin-top: 36px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .signature-block {
+            text-align: center;
+            width: 200px;
+        }
+
+        .doc-name {
+            font-weight: 800;
+            font-size: 0.92rem;
+            border-bottom: 1px solid #000;
+            padding-bottom: 2px;
+            display: block;
+        }
+
+        .doc-label {
+            font-size: 0.78rem;
+            margin-top: 5px;
+            color: #64748B;
+        }
+
+        @media (max-width: 440px) {
+            .card { padding: 22px; }
+            .logo { width: 40px; height: 40px; }
+            .uni-name { font-size: 1rem; }
+            .label { min-width: 110px; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+
+        <!-- HEADER -->
+        <div class="header-container">
+            <img src="{% static 'appointments/ua-logo.png' %}" alt="UA Logo" class="logo">
+            <div>
+                <h2 class="uni-name">University of the Assumption</h2>
+                <p class="location">City of San Fernando, Pampanga</p>
+            </div>
+        </div>
+
+        <h3 class="doc-title">Faculty Meeting Report</h3>
+
+        <!-- VERIFIED BADGE -->
+        <div class="verified-badge">
+            <span>✅</span>
+            <span class="text">Verified — This meeting report is authentic.</span>
+        </div>
+
+        <!-- MEETING GENERAL INFORMATION -->
+        <div class="section-title">Meeting General Information</div>
+        <div class="row">
+            <span class="label">Meeting Title:</span>
+            <span class="value">{{ service }}</span>
+        </div>
+        <div class="row">
+            <span class="label">Host / Organizer:</span>
+            <span class="value">{{ faculty_name }}</span>
+        </div>
+        <div class="row">
+            <span class="label">Date Scheduled:</span>
+            <span class="value">{{ date }}</span>
+        </div>
+        <div class="row">
+            <span class="label">Time Scheduled:</span>
+            <span class="value">{{ time }}</span>
+        </div>
+
+        <!-- MEETING AGENDA / NOTES -->
+        <div class="section-title">Meeting Agenda / Notes</div>
+        <div class="notes-box">{{ agenda }}</div>
+
+        <!-- PARTICIPANTS ATTENDANCE RECORD -->
+        <div class="section-title">Participants Attendance Record</div>
+        {% if participants %}
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 45%;">Participant Name</th>
+                    <th style="width: 25%;">Role</th>
+                    <th style="width: 30%;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in participants %}
+                <tr>
+                    <td class="td-name">{{ p.full_name }}</td>
+                    <td>{{ p.role }}</td>
+                    <td>
+                        {% if p.attended %}
+                        <span class="badge badge-attended">✓ Attended</span>
+                        {% else %}
+                        <span class="badge badge-absent">✗ Absent</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="no-participants">No participants were associated with this meeting.</p>
+        {% endif %}
+
+        <!-- SIGNATURE -->
+        <div class="signature-container">
+            <div class="signature-block">
+                <span class="doc-name">{{ faculty_name }}</span>
+                <div class="doc-label">Organizer / Attending Host</div>
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>

@@ -214,3 +214,43 @@ def verify_slip_view(request, appointment_id):
         'consultation_notes': appointment.consultation_notes or 'No consultation notes recorded.',
     }
     return render(request, 'appointments/verify_slip.html', context)
+
+
+def verify_meeting_report_view(request, appointment_id):
+    """Renders a verification page for faculty meeting reports that matches the in-app preview."""
+    from .models import MeetingAttendance
+
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    local_dt = timezone.localtime(appointment.date_time)
+
+    faculty_name = ""
+    if appointment.faculty:
+        faculty_name = f"{appointment.faculty.first_name} {appointment.faculty.last_name}"
+
+    # Build participant attendance list
+    participants = []
+    for participant in appointment.participants.all():
+        try:
+            record = MeetingAttendance.objects.get(appointment=appointment, user=participant)
+            attended = record.attended
+        except MeetingAttendance.DoesNotExist:
+            attended = False
+
+        role = getattr(participant, 'role', 'faculty')
+        participants.append({
+            'full_name': f"{participant.first_name} {participant.last_name}",
+            'role': 'Dean' if role == 'dean' else 'Faculty',
+            'attended': attended,
+        })
+
+    context = {
+        'appointment': appointment,
+        'faculty_name': faculty_name,
+        'date': local_dt.strftime('%B %d, %Y'),
+        'time': local_dt.strftime('%I:%M %p'),
+        'service': appointment.service or 'Faculty Meeting',
+        'agenda': appointment.condition or 'No agenda details provided.',
+        'participants': participants,
+    }
+    return render(request, 'appointments/verify_meeting_report.html', context)
+
