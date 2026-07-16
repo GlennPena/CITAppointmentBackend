@@ -49,6 +49,23 @@ def register_view(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+def check_availability_view(request):
+    username = request.data.get('username')
+    email = request.data.get('email')
+    
+    errors = {}
+    if username and User.objects.filter(username=username).exists():
+        errors['username'] = "Username is already taken."
+    if email and User.objects.filter(email=email).exists():
+        errors['email'] = "Email is already registered."
+        
+    if errors:
+        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    return Response({"message": "Available"}, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def google_auth_view(request):
     token = request.data.get('id_token')
     
