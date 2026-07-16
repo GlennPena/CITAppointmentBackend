@@ -19,15 +19,15 @@ class ParticipantSerializer(serializers.ModelSerializer):
 class AppointmentSerializer(serializers.ModelSerializer):
     """ Serializes appointment data and controls visibility, validation, and field access """
 
-    student_name = serializers.ReadOnlyField(source='student.get_full_name')
-    student_email = serializers.ReadOnlyField(source='student.email')
-    student_sex = serializers.ReadOnlyField(source='student.sex')
-    student_phone = serializers.ReadOnlyField(source='student.contact_number')
-    student_dob = serializers.ReadOnlyField(source='student.date_of_birth')
-    student_address = serializers.ReadOnlyField(source='student.address')
-    student_course = serializers.ReadOnlyField(source='student.course')
-    student_year = serializers.ReadOnlyField(source='student.year')
-    student_section = serializers.ReadOnlyField(source='student.section')
+    student_name = serializers.SerializerMethodField()
+    student_email = serializers.SerializerMethodField()
+    student_sex = serializers.SerializerMethodField()
+    student_phone = serializers.SerializerMethodField()
+    student_dob = serializers.SerializerMethodField()
+    student_address = serializers.SerializerMethodField()
+    student_course = serializers.SerializerMethodField()
+    student_year = serializers.SerializerMethodField()
+    student_section = serializers.SerializerMethodField()
     faculty_name = serializers.SerializerMethodField()
     participants_detail = ParticipantSerializer(many=True, read_only=True, source='participants')
     
@@ -38,10 +38,55 @@ class AppointmentSerializer(serializers.ModelSerializer):
         read_only_fields = ['student', 'last_status', 'created_at']
 
     def get_student_name(self, obj):
-        # Returns full student name
         if not obj.student:
             return "N/A"
         return f"{obj.student.first_name} {obj.student.last_name}"
+
+    def get_student_email(self, obj):
+        if not obj.student:
+            return "N/A"
+        return obj.student.email
+
+    def get_student_sex(self, obj):
+        if not obj.student:
+            return "N/A"
+        return obj.student.sex
+
+    def get_student_phone(self, obj):
+        if not obj.student:
+            return ""
+        try:
+            return decrypt(obj.student.contact_number) if obj.student.contact_number else ""
+        except:
+            return ""
+
+    def get_student_dob(self, obj):
+        if not obj.student:
+            return None
+        return obj.student.date_of_birth
+
+    def get_student_address(self, obj):
+        if not obj.student:
+            return ""
+        try:
+            return decrypt(obj.student.address) if obj.student.address else ""
+        except:
+            return ""
+
+    def get_student_course(self, obj):
+        if not obj.student:
+            return "N/A"
+        return obj.student.course
+
+    def get_student_year(self, obj):
+        if not obj.student:
+            return "N/A"
+        return obj.student.year
+
+    def get_student_section(self, obj):
+        if not obj.student:
+            return "N/A"
+        return obj.student.section
 
     def get_faculty_name(self, obj):
         # Returns full faculty name

@@ -40,14 +40,7 @@ ALLOWED_HOSTS = [
     "uaclinicappointmentsystem-backend.onrender.com"
 ]
 
-CORS_ALLOWED_ORIGINS = [ 
-    "http://localhost:3000",
-    "http://localhost:8081",
-    "http://127.0.0.1:8080",
-    "https://ua-clinic-appointment-system-front.vercel.app",
-    "https://cit-appointment-frontend-nqs9.vercel.app",
-    "https://cit-appointment-frontend-nqs9-okyrprck6-glenn-penas-projects.vercel.app"
-]
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Application definition
 
