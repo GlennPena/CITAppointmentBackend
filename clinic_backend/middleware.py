@@ -9,16 +9,15 @@ class CustomCorsMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        origin = request.headers.get("Origin", "*")
-        
+        origin = request.META.get("HTTP_ORIGIN") or request.headers.get("Origin") or "*"
+
         if request.method == "OPTIONS":
-            response = HttpResponse()
-            response.status_code = 200
+            response = HttpResponse("", content_type="text/plain", status=200)
         else:
             response = self.get_response(request)
 
-        response["Access-Control-Allow-Origin"] = origin if origin else "*"
+        response["Access-Control-Allow-Origin"] = origin
         response["Access-Control-Allow-Credentials"] = "true"
         response["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-        response["Access-Control-Allow-Headers"] = "Authorization, Content-Type, Accept, X-Requested-With, Origin, X-CSRFToken"
+        response["Access-Control-Allow-Headers"] = "Authorization, Content-Type, Accept, X-Requested-With, Origin, X-CSRFToken, Access-Control-Request-Method, Access-Control-Request-Headers"
         return response
