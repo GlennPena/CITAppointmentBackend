@@ -77,14 +77,18 @@ class UserSerializer(serializers.ModelSerializer):
         return data
 
     def validate_username(self, value):
-        # Checks if username already exists
-        if User.objects.filter(username=value).exists():
+        qs = User.objects.filter(username=value)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
             raise serializers.ValidationError("This username is already taken.")
         return value
     
     def validate_email(self, value):
-        # Checks if email already exists
-        if User.objects.filter(email=value).exists():
+        qs = User.objects.filter(email=value)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
             raise serializers.ValidationError("An account with this email already exists.")
         return value
 
