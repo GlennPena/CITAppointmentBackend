@@ -130,7 +130,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
         overlap = Appointment.objects.filter(
             Q(faculty_id__in=fac_ids) | Q(participants__id__in=fac_ids),
             date_time=dt,
-            status__in=['Pending', 'Approved', 'Completed']
+            status__in=['Pending', 'Approved']
         ).distinct()
 
         if self.instance:

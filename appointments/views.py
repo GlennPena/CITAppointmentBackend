@@ -168,7 +168,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 
         queryset = Appointment.objects.filter(
             Q(faculty_id__in=faculty_ids) | Q(participants__id__in=faculty_ids),
-            status__in=['Pending', 'Approved', 'Completed'],
+            status__in=['Pending', 'Approved'],
         ).distinct()
 
         if date_str:
