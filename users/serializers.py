@@ -44,6 +44,11 @@ class UserSerializer(serializers.ModelSerializer):
             ]
 
     def validate(self, data):
+        request = self.context.get('request')
+        is_admin = (request and 
+                    request.user.is_authenticated and 
+                    getattr(request.user, 'role', None) == 'admin')
+
         is_create = self.instance is None
         role = data.get('role') or (self.instance.role if self.instance else 'student')
         errors = {}
@@ -57,7 +62,7 @@ class UserSerializer(serializers.ModelSerializer):
             for field in patient_required_fields:
                 if (is_create and not data.get(field)) or (field in data and not data.get(field)):
                     errors[field] = "This field is required for students."
-        elif role == 'faculty':
+        elif role == 'faculty' and not is_admin:
             faculty_required_fields = [
                 'date_of_birth', 'sex', 'contact_number', 'address'
             ]
@@ -91,10 +96,10 @@ class UserSerializer(serializers.ModelSerializer):
                     request.user.is_authenticated and 
                     getattr(request.user, 'role', None) == 'admin')
 
-        if requested_role == 'faculty':
-            role = 'faculty'
-        elif is_admin and requested_role in ['faculty', 'admin', 'dean']:
+        if is_admin and requested_role in ['faculty', 'admin', 'dean']:
             role = requested_role
+        elif requested_role == 'faculty':
+            role = 'faculty'
         else:
             role = 'student'
 
