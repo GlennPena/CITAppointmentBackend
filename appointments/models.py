@@ -28,6 +28,8 @@ class Appointment(models.Model):
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     last_status = models.CharField(max_length=20, default='Pending')
+    rating = models.PositiveSmallIntegerField(null=True, blank=True)
+    rating_feedback = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 

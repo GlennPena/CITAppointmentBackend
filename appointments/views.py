@@ -193,6 +193,33 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         
         return Response({'status': 'appointment completed'})
     
+    @action(detail=True, methods=['post'])
+    def rate_consultation(self, request, pk=None):
+        appointment = self.get_object()
+        user = request.user
+        
+        if appointment.student != user:
+            raise PermissionDenied("Only the student who attended this consultation can rate it.")
+        
+        if appointment.status != 'Completed':
+            raise PermissionDenied("You can only rate completed consultations.")
+        
+        try:
+            rating_val = int(request.data.get('rating'))
+            if rating_val < 1 or rating_val > 5:
+                return Response({'error': 'Rating must be between 1 and 5.'}, status=400)
+        except (TypeError, ValueError):
+            return Response({'error': 'Invalid rating value.'}, status=400)
+        
+        feedback = request.data.get('rating_feedback', '').strip()
+        
+        appointment.rating = rating_val
+        appointment.rating_feedback = feedback
+        appointment.save()
+        
+        serializer = self.get_serializer(appointment)
+        return Response(serializer.data)
+    
 def verify_slip_view(request, appointment_id):
     appointment = get_object_or_404(Appointment, id=appointment_id)
     
@@ -204,6 +231,15 @@ def verify_slip_view(request, appointment_id):
     else:
         full_name = "N/A (Internal Meeting)"
     
+    RATING_LABELS = {
+        1: "1 / 5 ★☆☆☆☆ — Very Dissatisfied (Poor)",
+        2: "2 / 5 ★★☆☆☆ — Dissatisfied (Below Average)",
+        3: "3 / 5 ★★★☆☆ — Neutral",
+        4: "4 / 5 ★★★★☆ — Satisfied (Good)",
+        5: "5 / 5 ★★★★★ — Very Satisfied (Excellent)",
+    }
+    rating_display = RATING_LABELS.get(appointment.rating, "") if appointment.rating else None
+
     context = {
         'appointment': appointment,
         'full_name': full_name,
@@ -212,6 +248,9 @@ def verify_slip_view(request, appointment_id):
         'service': appointment.service or 'General Consultation',
         'appointment_notes': appointment.condition or 'No appointment notes provided.',
         'consultation_notes': appointment.consultation_notes or 'No consultation notes recorded.',
+        'rating': appointment.rating,
+        'rating_display': rating_display,
+        'rating_feedback': appointment.rating_feedback,
     }
     return render(request, 'appointments/verify_slip.html', context)
 

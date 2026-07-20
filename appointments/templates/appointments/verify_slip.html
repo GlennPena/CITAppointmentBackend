@@ -247,6 +247,17 @@
         <div class="section-title">Consultation Report</div>
         <div class="notes-box">{{ consultation_notes }}</div>
 
+        {% if rating %}
+        <!-- STUDENT RATING & EVALUATION -->
+        <div class="section-title">Student Rating & Evaluation</div>
+        <div class="notes-box">
+            <strong>Rating:</strong> {{ rating_display }}
+            {% if rating_feedback %}
+            <br><strong>Feedback:</strong> {{ rating_feedback }}
+            {% endif %}
+        </div>
+        {% endif %}
+
         <!-- SIGNATURE -->
         <div class="signature-container">
             <div class="signature-block">
