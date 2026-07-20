@@ -33,26 +33,9 @@ GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False').lower() in ['true', '1', 'yes']
 
-ALLOWED_HOSTS = [ 
-    "localhost",
-    "127.0.0.1",
-    ".onrender.com",
-    "uaclinicappointmentsystem-backend.onrender.com"
-]
+ALLOWED_HOSTS = ['*']
 
-CORS_ALLOWED_ORIGINS = [ 
-    "http://localhost:3000",
-    "http://localhost:8081",
-    "http://127.0.0.1:8080",
-    "https://ua-clinic-appointment-system-front.vercel.app",
-    "https://cit-appointment-frontend.vercel.app",
-    "https://cit-appointment-frontend-nqs9.vercel.app",
-    "https://cit-appointment-frontend-nqs9-okyrprck6-glenn-penas-projects.vercel.app"
-]
-
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^https://.*\.vercel\.app$",
-]
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Application definition
 
