@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Appointment
 from django.utils import timezone
+from django.db.models import Q
 from .utils import encrypt, decrypt
 from users.models import User
 
@@ -116,13 +117,27 @@ class AppointmentSerializer(serializers.ModelSerializer):
         if not check_dt or not fac:
          raise serializers.ValidationError("Faculty and Date/Time are required.")
         
-        # Prevent double booking for the same faculty at the same time
-        overlap = Appointment.objects.filter(faculty=fac, date_time=dt, status__in=['Pending', 'Approved', 'Completed'])
+        # Prevent double booking for the same faculty or participants at the same time
+        participants = data.get('participants', self.instance.participants.all() if self.instance else [])
+        fac_ids = []
+        if fac:
+            fac_ids.append(fac.id)
+        for p in participants:
+            p_id = p.id if hasattr(p, 'id') else p
+            if p_id not in fac_ids:
+                fac_ids.append(p_id)
+
+        overlap = Appointment.objects.filter(
+            Q(faculty_id__in=fac_ids) | Q(participants__id__in=fac_ids),
+            date_time=dt,
+            status__in=['Pending', 'Approved', 'Completed']
+        ).distinct()
+
         if self.instance:
             overlap = overlap.exclude(pk=self.instance.pk)
-        
+
         if overlap.exists():
-            raise serializers.ValidationError("This time slot is already taken.")
+            raise serializers.ValidationError("This time slot is already taken by the host or selected participants.")
 
         return data
 

@@ -108,7 +108,8 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 
         # Faculty / Dean update rules
         if user.role in ["faculty", "dean"]:
-            if instance.faculty != user:
+            is_host_or_participant = (instance.faculty == user) or instance.participants.filter(pk=user.pk).exists()
+            if not is_host_or_participant:
                 raise PermissionDenied("Unauthorized.")
 
             # Faculty can only APPROVE or REJECT if Pending.
@@ -145,7 +146,15 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         if user.role == "admin":
             return super().destroy(request, *args, **kwargs)
 
-        # Students and Faculty can only delete if Rejected, Cancelled, or Completed
+        is_owner_or_participant = (
+            (instance.student == user) or 
+            (instance.faculty == user) or 
+            instance.participants.filter(pk=user.pk).exists()
+        )
+        if not is_owner_or_participant:
+            raise PermissionDenied("Unauthorized.")
+
+        # Students and Faculty can only delete if Rejected, Cancelled, Completed, or Expired
         if instance.status not in ["Rejected", "Cancelled", "Completed", "Expired"]:
             raise PermissionDenied("Active or Pending appointments cannot be deleted.")
 
@@ -155,10 +164,12 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     def busy_slots(self, request, faculty_id=None):
         date_str = request.query_params.get('date')
 
+        faculty_ids = [fid.strip() for fid in faculty_id.split(',') if fid.strip()]
+
         queryset = Appointment.objects.filter(
-            faculty_id=faculty_id,
+            Q(faculty_id__in=faculty_ids) | Q(participants__id__in=faculty_ids),
             status__in=['Pending', 'Approved', 'Completed'],
-        )
+        ).distinct()
 
         if date_str:
             queryset = queryset.filter(date_time__date=date_str)
