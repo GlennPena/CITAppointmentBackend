@@ -232,8 +232,11 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
     
 def verify_slip_view(request, appointment_id):
-    appointment = get_object_or_404(Appointment, id=appointment_id)
-    
+    try:
+        appointment = Appointment.objects.get(id=appointment_id)
+    except Appointment.DoesNotExist:
+        return render(request, 'appointments/verify_slip.html', {'not_found': True, 'appointment_id': appointment_id}, status=404)
+
     local_dt = timezone.localtime(appointment.date_time)
     
     # Build student name safely (student can be null for internal meetings)
@@ -270,7 +273,11 @@ def verify_meeting_report_view(request, appointment_id):
     """Renders a verification page for faculty meeting reports that matches the in-app preview."""
     from .models import MeetingAttendance
 
-    appointment = get_object_or_404(Appointment, id=appointment_id)
+    try:
+        appointment = Appointment.objects.get(id=appointment_id)
+    except Appointment.DoesNotExist:
+        return render(request, 'appointments/verify_meeting_report.html', {'not_found': True, 'appointment_id': appointment_id}, status=404)
+
     local_dt = timezone.localtime(appointment.date_time)
 
     faculty_name = ""
