@@ -9,6 +9,7 @@ from rest_framework.decorators import action
 from datetime import timedelta
 from django.db.models import Q
 from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
 
 
 class AppointmentViewSet(viewsets.ModelViewSet):
@@ -234,39 +235,54 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 def verify_slip_view(request, appointment_id):
     try:
         appointment = Appointment.objects.get(id=appointment_id)
+        local_dt = timezone.localtime(appointment.date_time)
+
+        if appointment.student:
+            full_name = f"{appointment.student.first_name} {appointment.student.last_name}"
+            student_course = getattr(appointment.student, 'course', '')
+            student_year = getattr(appointment.student, 'year', '')
+            student_section = getattr(appointment.student, 'section', '')
+        else:
+            full_name = "N/A (Internal Meeting)"
+            student_course = ""
+            student_year = ""
+            student_section = ""
+
+        RATING_LABELS = {
+            1: "1 / 5 ★☆☆☆☆ — Very Dissatisfied (Poor)",
+            2: "2 / 5 ★★☆☆☆ — Dissatisfied (Below Average)",
+            3: "3 / 5 ★★★☆☆ — Neutral",
+            4: "4 / 5 ★★★★☆ — Satisfied (Good)",
+            5: "5 / 5 ★★★★★ — Very Satisfied (Excellent)",
+        }
+        rating_display = RATING_LABELS.get(appointment.rating, "") if appointment.rating else None
+        faculty_name = f"{appointment.faculty.first_name} {appointment.faculty.last_name}" if appointment.faculty else ""
+
+        data = {
+            'not_found': False,
+            'id': appointment.id,
+            'full_name': full_name,
+            'student_course': student_course,
+            'student_year': student_year,
+            'student_section': student_section,
+            'date': local_dt.strftime('%B %d, %Y'),
+            'time': local_dt.strftime('%I:%M %p'),
+            'service': appointment.service or 'General Consultation',
+            'appointment_notes': appointment.condition or 'No appointment notes provided.',
+            'consultation_notes': appointment.consultation_notes or 'No consultation notes recorded.',
+            'rating': appointment.rating,
+            'rating_display': rating_display,
+            'rating_feedback': appointment.rating_feedback,
+            'faculty_name': faculty_name,
+        }
     except Appointment.DoesNotExist:
-        return render(request, 'appointments/verify_slip.html', {'not_found': True, 'appointment_id': appointment_id}, status=404)
+        data = {'not_found': True, 'appointment_id': appointment_id}
 
-    local_dt = timezone.localtime(appointment.date_time)
-    
-    # Build student name safely (student can be null for internal meetings)
-    if appointment.student:
-        full_name = f"{appointment.student.first_name} {appointment.student.last_name}"
-    else:
-        full_name = "N/A (Internal Meeting)"
-    
-    RATING_LABELS = {
-        1: "1 / 5 ★☆☆☆☆ — Very Dissatisfied (Poor)",
-        2: "2 / 5 ★★☆☆☆ — Dissatisfied (Below Average)",
-        3: "3 / 5 ★★★☆☆ — Neutral",
-        4: "4 / 5 ★★★★☆ — Satisfied (Good)",
-        5: "5 / 5 ★★★★★ — Very Satisfied (Excellent)",
-    }
-    rating_display = RATING_LABELS.get(appointment.rating, "") if appointment.rating else None
+    if request.GET.get('format') == 'json' or 'application/json' in request.headers.get('Accept', ''):
+        return JsonResponse(data, status=404 if data.get('not_found') else 200)
 
-    context = {
-        'appointment': appointment,
-        'full_name': full_name,
-        'date': local_dt.strftime('%B %d, %Y'),
-        'time': local_dt.strftime('%I:%M %p'),
-        'service': appointment.service or 'General Consultation',
-        'appointment_notes': appointment.condition or 'No appointment notes provided.',
-        'consultation_notes': appointment.consultation_notes or 'No consultation notes recorded.',
-        'rating': appointment.rating,
-        'rating_display': rating_display,
-        'rating_feedback': appointment.rating_feedback,
-    }
-    return render(request, 'appointments/verify_slip.html', context)
+    context = {'appointment': appointment if not data.get('not_found') else None, **data}
+    return render(request, 'appointments/verify_slip.html', context, status=404 if data.get('not_found') else 200)
 
 
 def verify_meeting_report_view(request, appointment_id):
@@ -275,39 +291,43 @@ def verify_meeting_report_view(request, appointment_id):
 
     try:
         appointment = Appointment.objects.get(id=appointment_id)
+        local_dt = timezone.localtime(appointment.date_time)
+
+        faculty_name = ""
+        if appointment.faculty:
+            faculty_name = f"{appointment.faculty.first_name} {appointment.faculty.last_name}"
+
+        participants = []
+        for participant in appointment.participants.all():
+            try:
+                record = MeetingAttendance.objects.get(appointment=appointment, user=participant)
+                attended = record.attended
+            except MeetingAttendance.DoesNotExist:
+                attended = False
+
+            role = getattr(participant, 'role', 'faculty')
+            participants.append({
+                'full_name': f"{participant.first_name} {participant.last_name}",
+                'role': 'Dean' if role == 'dean' else 'Faculty',
+                'attended': attended,
+            })
+
+        data = {
+            'not_found': False,
+            'id': appointment.id,
+            'faculty_name': faculty_name,
+            'date': local_dt.strftime('%B %d, %Y'),
+            'time': local_dt.strftime('%I:%M %p'),
+            'service': appointment.service or 'Faculty Meeting',
+            'agenda': appointment.condition or 'No agenda details provided.',
+            'participants': participants,
+        }
     except Appointment.DoesNotExist:
-        return render(request, 'appointments/verify_meeting_report.html', {'not_found': True, 'appointment_id': appointment_id}, status=404)
+        data = {'not_found': True, 'appointment_id': appointment_id}
 
-    local_dt = timezone.localtime(appointment.date_time)
+    if request.GET.get('format') == 'json' or 'application/json' in request.headers.get('Accept', ''):
+        return JsonResponse(data, status=404 if data.get('not_found') else 200)
 
-    faculty_name = ""
-    if appointment.faculty:
-        faculty_name = f"{appointment.faculty.first_name} {appointment.faculty.last_name}"
-
-    # Build participant attendance list
-    participants = []
-    for participant in appointment.participants.all():
-        try:
-            record = MeetingAttendance.objects.get(appointment=appointment, user=participant)
-            attended = record.attended
-        except MeetingAttendance.DoesNotExist:
-            attended = False
-
-        role = getattr(participant, 'role', 'faculty')
-        participants.append({
-            'full_name': f"{participant.first_name} {participant.last_name}",
-            'role': 'Dean' if role == 'dean' else 'Faculty',
-            'attended': attended,
-        })
-
-    context = {
-        'appointment': appointment,
-        'faculty_name': faculty_name,
-        'date': local_dt.strftime('%B %d, %Y'),
-        'time': local_dt.strftime('%I:%M %p'),
-        'service': appointment.service or 'Faculty Meeting',
-        'agenda': appointment.condition or 'No agenda details provided.',
-        'participants': participants,
-    }
-    return render(request, 'appointments/verify_meeting_report.html', context)
+    context = {'appointment': appointment if not data.get('not_found') else None, **data}
+    return render(request, 'appointments/verify_meeting_report.html', context, status=404 if data.get('not_found') else 200)
 
